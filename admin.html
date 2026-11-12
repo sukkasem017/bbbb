@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ผู้ดูแลระบบ | ลงทะเบียนนักศึกษา</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Prompt:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --ink: #0e1330;
+      --muted: #5b6285;
+      --cobalt: #2438d6;
+      --cobalt-deep: #1a2aa8;
+      --sun: #ffc93c;
+      --mist: #eef0fb;
+      --paper: #ffffff;
+      --line: #d9ddf2;
+      --danger: #c62828;
+      --font-display: "Prompt", "IBM Plex Sans Thai", system-ui, sans-serif;
+      --font-body: "IBM Plex Sans Thai", "Sarabun", system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--ink);
+      background-color: var(--mist);
+      background-image: radial-gradient(rgba(36, 56, 214, 0.09) 1.2px, transparent 1.2px);
+      background-size: 22px 22px;
+      min-height: 100vh;
+    }
+    h1, h2 { font-family: var(--font-display); margin: 0; line-height: 1.25; }
+    a { color: var(--cobalt); }
+    :focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+    .hidden { display: none !important; }
+
+    /* ปุ่ม */
+    button, .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 12px 20px; border: 0; border-radius: 12px;
+      font: inherit; font-weight: 600; color: #fff;
+      background: var(--cobalt); box-shadow: 0 4px 0 var(--cobalt-deep);
+      cursor: pointer; text-decoration: none;
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.15s ease;
+    }
+    button:hover, .btn:hover { background: #2b42ea; }
+    button:active, .btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--cobalt-deep); }
+    button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    button.secondary, .btn.secondary {
+      background: var(--paper); color: var(--ink);
+      box-shadow: 0 4px 0 var(--line); border: 1.5px solid var(--line);
+    }
+    button.secondary:hover, .btn.secondary:hover { background: #f7f8ff; }
+    button.secondary:active, .btn.secondary:active { box-shadow: 0 1px 0 var(--line); }
+    button.danger { background: var(--danger); box-shadow: 0 3px 0 #8e1b1b; }
+    button.danger:hover { background: #d93a3a; }
+    button.small { padding: 6px 12px; font-size: 0.85rem; border-radius: 9px; }
+
+    /* ฟอร์ม */
+    label { display: block; font-weight: 600; font-size: 0.92rem; margin-bottom: 6px; }
+    input, select {
+      width: 100%; min-height: 48px; padding: 10px 14px;
+      border: 1.5px solid var(--line); border-radius: 12px;
+      font: inherit; background: #fbfbff; color: var(--ink);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    input::placeholder { color: #9aa0c0; }
+    input:focus, select:focus {
+      outline: none; background: #fff; border-color: var(--cobalt);
+      box-shadow: 0 0 0 4px rgba(36, 56, 214, 0.18);
+    }
+    .msg {
+      display: none; margin-top: 14px; padding: 12px 16px; border-radius: 12px;
+      font-size: 0.95rem; font-weight: 500; white-space: pre-line;
+    }
+    .msg.show { display: block; }
+    .msg.ok  { background: #dff5e8; color: #14532d; border: 1.5px solid #a9dfc1; }
+    .msg.err { background: #fde8e8; color: #7f1d1d; border: 1.5px solid #f4b4b4; }
+
+    .admin { max-width: 1180px; margin: 0 auto; padding: 24px 18px 56px; }
+    .brandbar { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 1.1rem; }
+    .mark { width: 22px; height: 22px; border-radius: 6px; background: var(--sun); box-shadow: inset -6px -6px 0 rgba(36, 56, 214, 0.35); }
+
+    /* การ์ดเข้าสู่ระบบ / ไม่มีสิทธิ์ */
+    .logincard {
+      max-width: 440px; margin: 56px auto 0;
+      background: var(--paper); border: 1.5px solid var(--line);
+      border-radius: 20px; padding: 30px 26px; box-shadow: 0 6px 0 var(--line);
+    }
+    .logincard h1 { font-size: 1.6rem; margin-bottom: 4px; }
+    .logincard .sub { margin: 0 0 22px; color: var(--muted); }
+    .logincard .field { margin-bottom: 14px; }
+    .logincard button[type="submit"] { width: 100%; margin-top: 6px; }
+    .footer-link { margin-top: 20px; text-align: center; font-size: 0.9rem; }
+    .footer-link a { color: var(--muted); }
+    .code {
+      display: block; margin: 10px 0 16px; padding: 12px 14px; border-radius: 12px;
+      background: var(--ink); color: #e6e9ff; font-family: ui-monospace, Menlo, Consolas, monospace;
+      font-size: 0.82rem; line-height: 1.5; overflow-wrap: anywhere; user-select: all;
+    }
+
+    /* แดชบอร์ด */
+    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 22px; }
+    .topbar .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .admin h1.title { font-size: clamp(1.5rem, 3.5vw, 2rem); margin-bottom: 18px; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    @media (max-width: 640px) { .stats { grid-template-columns: 1fr; } }
+    .stat {
+      background: var(--paper); border: 1.5px solid var(--line); border-radius: 16px;
+      padding: 16px 18px; display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
+    }
+    .stat .num { font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1; color: var(--cobalt); font-variant-numeric: tabular-nums; }
+    .stat .lbl { color: var(--muted); font-size: 0.92rem; }
+    .stat.hot { background: var(--cobalt); border-color: var(--cobalt-deep); }
+    .stat.hot .num { color: var(--sun); }
+    .stat.hot .lbl { color: rgba(255, 255, 255, 0.8); }
+
+    .panel { background: var(--paper); border: 1.5px solid var(--line); border-radius: 20px; padding: 18px; box-shadow: 0 6px 0 var(--line); }
+    .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+    .toolbar .search { flex: 1 1 260px; max-width: 420px; }
+    .toolbar .grade { flex: 0 1 190px; }
+    .toolbar .spacer { flex: 1; }
+    .count { color: var(--muted); font-size: 0.9rem; margin: 0 0 10px; }
+
+    .table-wrap { overflow-x: auto; border: 1.5px solid var(--line); border-radius: 14px; }
+    table { width: 100%; border-collapse: collapse; background: #fff; }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--line); font-size: 0.93rem; vertical-align: middle; }
+    th { background: #f4f5ff; font-family: var(--font-display); font-weight: 600; font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover td { background: #fafaff; }
+
+    .person { display: flex; align-items: center; gap: 12px; min-width: 200px; }
+    .avatar {
+      flex: none; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
+      background: var(--sun); color: var(--ink); font-family: var(--font-display); font-weight: 700; font-size: 1.05rem;
+    }
+    .pname { font-weight: 600; line-height: 1.3; }
+    .psid { font-size: 0.82rem; color: var(--muted); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+    .chip { display: inline-block; padding: 2px 10px; border-radius: 999px; background: #e5e8ff; color: var(--cobalt-deep); font-weight: 600; font-size: 0.82rem; white-space: nowrap; }
+    td.motto { max-width: 260px; overflow-wrap: anywhere; color: #2d3357; font-style: italic; }
+    td.when { white-space: nowrap; color: var(--muted); font-size: 0.85rem; }
+    .empty { text-align: center; color: var(--muted); padding: 36px 16px; }
+
+    /* มือถือ: เปลี่ยนแถวตารางเป็นการ์ด */
+    @media (max-width: 720px) {
+      table, tbody, tr, td { display: block; width: 100%; }
+      thead { display: none; }
+      .table-wrap { border: 0; overflow: visible; }
+      tbody tr { border: 1.5px solid var(--line); border-radius: 14px; margin-bottom: 12px; padding: 6px 4px; background: #fff; }
+      td { border: 0; padding: 6px 12px; display: flex; justify-content: space-between; gap: 14px; align-items: center; }
+      td::before { content: attr(data-label); color: var(--muted); font-size: 0.82rem; flex: none; }
+      td.person-cell::before, td.empty::before { display: none; }
+      td.person-cell { padding-top: 10px; }
+      td.motto { max-width: none; text-align: right; }
+      tbody tr:hover td { background: transparent; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; animation-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="admin">
+
+    <!-- ===== เข้าสู่ระบบ ===== -->
+    <div id="loginView">
+      <div class="brandbar"><span class="mark"></span> ลงทะเบียนนักศึกษา</div>
+      <div class="logincard">
+        <h1>เข้าสู่ระบบผู้ดูแล</h1>
+        <p class="sub">ใช้อีเมลและรหัสผ่านที่สร้างไว้ใน Supabase (Authentication → Users)</p>
+        <form id="loginForm">
+          <div class="field">
+            <label for="email">อีเมล</label>
+            <input id="email" type="email" autocomplete="username" required />
+          </div>
+          <div class="field">
+            <label for="password">รหัสผ่าน</label>
+            <input id="password" type="password" autocomplete="current-password" required />
+          </div>
+          <button type="submit" id="loginBtn">เข้าสู่ระบบ</button>
+        </form>
+        <div id="loginMsg" class="msg" role="alert"></div>
+        <div class="footer-link"><a href="index.html">กลับหน้าลงทะเบียน</a></div>
+      </div>
+    </div>
+
+    <!-- ===== เข้าสู่ระบบแล้ว แต่ยังไม่ใช่ admin ===== -->
+    <div id="noAccessView" class="hidden">
+      <div class="brandbar"><span class="mark"></span> ลงทะเบียนนักศึกษา</div>
+      <div class="logincard">
+        <h1>บัญชีนี้ยังไม่ได้เป็นผู้ดูแล</h1>
+        <p class="sub">ล็อกอินสำเร็จแล้ว เหลืออีกขั้นเดียว: คัดลอกคำสั่งด้านล่างไปรันที่ Supabase → SQL Editor แล้วกลับมารีเฟรชหน้านี้</p>
+        <code class="code" id="grantSql"></code>
+        <button class="secondary" id="noAccessLogout" type="button">ออกจากระบบ</button>
+      </div>
+    </div>
+
+    <!-- ===== แดชบอร์ด ===== -->
+    <div id="dashView" class="hidden">
+      <div class="topbar">
+        <div class="brandbar"><span class="mark"></span> ลงทะเบียนนักศึกษา</div>
+        <div class="actions">
+          <a class="btn secondary" href="index.html">หน้าลงทะเบียน</a>
+          <button class="secondary" id="logoutBtn" type="button">ออกจากระบบ</button>
+        </div>
+      </div>
+
+      <h1 class="title">ข้อมูลผู้ลงทะเบียน</h1>
+
+      <div class="stats">
+        <div class="stat hot"><span class="lbl">ลงทะเบียนทั้งหมด</span><span class="num" id="stTotal">0</span></div>
+        <div class="stat"><span class="lbl">ลงทะเบียนวันนี้</span><span class="num" id="stToday">0</span></div>
+        <div class="stat"><span class="lbl">จำนวนแผนก</span><span class="num" id="stDept">0</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="toolbar">
+          <input class="search" id="search" type="search" placeholder="ค้นหาชื่อ เลขนักศึกษา แผนก หรือสาขา" aria-label="ค้นหา" />
+          <select class="grade" id="gradeFilter" aria-label="กรองตามระดับชั้น"></select>
+          <span class="spacer"></span>
+          <button class="secondary" id="refreshBtn" type="button">รีเฟรช</button>
+          <button id="csvBtn" type="button">ดาวน์โหลด CSV</button>
+        </div>
+        <p class="count" id="countText"></p>
+        <div id="dashMsg" class="msg" role="alert"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ผู้ลงทะเบียน</th>
+                <th>อายุ</th>
+                <th>แผนก</th>
+                <th>สาขา</th>
+                <th>ระดับชั้น</th>
+                <th>คติประจำใจ</th>
+                <th>ลงทะเบียนเมื่อ</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    // ===== ตั้งค่า Supabase (anon key เปิดเผยได้ เพราะสิทธิ์คุมด้วย RLS) =====
+    const SUPABASE_URL = "https://akblfnnkaehzpqrgonya.supabase.co";
+    const SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFrYmxmbm5rYWVoenBxcmdvbnlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTQ0NDE0NTIsImV4cCI6MjExMDAxNzQ1Mn0.iBRXIgSzpg6gUSuzdXciTYJ7xc5ByG-RAbOrlqx8yZg";
+    // ======================================================================
+
+    const $ = (id) => document.getElementById(id);
+    let rows = [];
+
+    // ป้องกัน XSS: ข้อมูลที่ผู้ใช้กรอกต้อง escape ก่อนแสดงผล
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+      }[c]));
+    }
+    function showMsg(el, text, type) { el.textContent = text; el.className = "msg show " + type; }
+    function clearMsg(el) { el.className = "msg"; }
+    function fmtDate(iso) {
+      return new Date(iso).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" });
+    }
+
+    const db = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    function showView(name) {
+      ["loginView", "noAccessView", "dashView"].forEach((v) => $(v).classList.toggle("hidden", v !== name));
+    }
+
+    // ---------- Auth ----------
+    async function checkAdminAndShow() {
+      if (!db) {
+        showView("loginView");
+        return showMsg($("loginMsg"), "โหลดไลบรารี Supabase ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วรีเฟรชหน้านี้", "err");
+      }
+      const { data: { session } } = await db.auth.getSession();
+      if (!session) return showView("loginView");
+
+      const { data, error } = await db
+        .from("admins").select("user_id").eq("user_id", session.user.id).maybeSingle();
+
+      if (error) {
+        console.error(error);
+        showView("loginView");
+        return showMsg($("loginMsg"), "ตรวจสอบสิทธิ์ไม่สำเร็จ: " + error.message, "err");
+      }
+      if (!data) {
+        $("grantSql").textContent =
+          "insert into public.admins (user_id) values ('" + session.user.id + "');";
+        return showView("noAccessView");
+      }
+      showView("dashView");
+      loadData();
+    }
+
+    $("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      clearMsg($("loginMsg"));
+      if (!db) return;
+      $("loginBtn").disabled = true;
+      const { error } = await db.auth.signInWithPassword({
+        email: $("email").value.trim(),
+        password: $("password").value,
+      });
+      $("loginBtn").disabled = false;
+      if (error) return showMsg($("loginMsg"), "อีเมลหรือรหัสผ่านไม่ถูกต้อง", "err");
+      $("password").value = "";
+      checkAdminAndShow();
+    });
+
+    async function logout() {
+      await db.auth.signOut();
+      rows = [];
+      showView("loginView");
+    }
+    $("logoutBtn").addEventListener("click", logout);
+    $("noAccessLogout").addEventListener("click", logout);
+
+    // ---------- ข้อมูล ----------
+    async function loadData() {
+      clearMsg($("dashMsg"));
+      const { data, error } = await db
+        .from("registrations").select("*").order("created_at", { ascending: false });
+      if (error) {
+        console.error(error);
+        return showMsg($("dashMsg"), "โหลดข้อมูลไม่สำเร็จ: " + error.message, "err");
+      }
+      rows = data || [];
+      buildGradeFilter();
+      render();
+    }
+
+    function buildGradeFilter() {
+      const sel = $("gradeFilter");
+      const current = sel.value;
+      const grades = [...new Set(rows.map((r) => r.grade_level).filter(Boolean))].sort();
+      sel.innerHTML = '<option value="">ทุกระดับชั้น</option>' +
+        grades.map((g) => `<option value="${esc(g)}">${esc(g)}</option>`).join("");
+      sel.value = grades.includes(current) ? current : "";
+    }
+
+    function filtered() {
+      const q = $("search").value.trim().toLowerCase();
+      const g = $("gradeFilter").value;
+      return rows.filter((r) => {
+        if (g && r.grade_level !== g) return false;
+        if (!q) return true;
+        return [r.first_name, r.last_name, r.student_id, r.department, r.branch, r.grade_level]
+          .some((v) => String(v ?? "").toLowerCase().includes(q));
+      });
+    }
+
+    function renderStats() {
+      const today = new Date().toDateString();
+      $("stTotal").textContent = rows.length;
+      $("stToday").textContent = rows.filter((r) => new Date(r.created_at).toDateString() === today).length;
+      $("stDept").textContent = new Set(rows.map((r) => String(r.department).trim()).filter(Boolean)).size;
+    }
+
+    function render() {
+      renderStats();
+      const list = filtered();
+      $("countText").textContent = rows.length ? `แสดง ${list.length} จาก ${rows.length} รายการ` : "";
+
+      if (!list.length) {
+        $("tbody").innerHTML = `<tr><td colspan="8" class="empty">${
+          rows.length ? "ไม่พบรายการที่ตรงกับตัวกรอง" : "ยังไม่มีผู้ลงทะเบียน แชร์ลิงก์หน้าลงทะเบียนเพื่อเริ่มรับข้อมูล"
+        }</td></tr>`;
+        return;
+      }
+      $("tbody").innerHTML = list.map((r) => `
+        <tr>
+          <td class="person-cell">
+            <div class="person">
+              <div class="avatar">${esc(Array.from(r.first_name || "?")[0])}</div>
+              <div>
+                <div class="pname">${esc(r.first_name)} ${esc(r.last_name)}</div>
+                <div class="psid">${esc(r.student_id)}</div>
+              </div>
+            </div>
+          </td>
+          <td data-label="อายุ">${esc(r.age)}</td>
+          <td data-label="แผนก">${esc(r.department)}</td>
+          <td data-label="สาขา">${esc(r.branch)}</td>
+          <td data-label="ระดับชั้น"><span class="chip">${esc(r.grade_level)}</span></td>
+          <td data-label="คติประจำใจ" class="motto">${esc(r.motto)}</td>
+          <td data-label="ลงทะเบียนเมื่อ" class="when">${esc(fmtDate(r.created_at))}</td>
+          <td><button class="danger small" type="button" data-del="${esc(r.id)}">ลบ</button></td>
+        </tr>`).join("");
+    }
+
+    $("tbody").addEventListener("click", async (e) => {
+      const id = e.target.getAttribute("data-del");
+      if (!id) return;
+      if (!confirm("ลบข้อมูลนี้ถาวร ยืนยันหรือไม่?")) return;
+      const { error } = await db.from("registrations").delete().eq("id", id);
+      if (error) return showMsg($("dashMsg"), "ลบไม่สำเร็จ: " + error.message, "err");
+      rows = rows.filter((r) => r.id !== id);
+      buildGradeFilter();
+      render();
+    });
+
+    $("search").addEventListener("input", render);
+    $("gradeFilter").addEventListener("change", render);
+    $("refreshBtn").addEventListener("click", loadData);
+
+    // ---------- CSV ----------
+    function csvCell(v) {
+      let s = String(v ?? "");
+      if (/^[=+\-@]/.test(s)) s = "'" + s; // กัน CSV injection ใน Excel
+      return '"' + s.replace(/"/g, '""') + '"';
+    }
+    $("csvBtn").addEventListener("click", () => {
+      const head = ["ชื่อ", "นามสกุล", "อายุ", "แผนก", "สาขา", "เลขนักศึกษา", "ระดับชั้น", "คติประจำใจ", "ลงทะเบียนเมื่อ"];
+      const lines = [head.map(csvCell).join(",")];
+      filtered().forEach((r) => {
+        lines.push([r.first_name, r.last_name, r.age, r.department, r.branch,
+          r.student_id, r.grade_level, r.motto, fmtDate(r.created_at)].map(csvCell).join(","));
+      });
+      // \ufeff = BOM ให้ Excel อ่านภาษาไทยได้ถูกต้อง
+      const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "registrations.csv";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    checkAdminAndShow();
+  </script>
+</body>
+</html>
